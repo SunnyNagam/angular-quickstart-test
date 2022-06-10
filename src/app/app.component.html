@@ -2,7 +2,11 @@
   <h1>Detecting things in images!!!</h1>
   <input type="file" accept="image/*" (change)="onFileChanged($event)">
   <br>
-  <button (click)="predict()">Predict</button>
+  <button (click)="predict()">Find stuff!</button>
   <br>
+  <h1>What we found:</h1>
+  <div *ngFor="let def of definitions">
+    <p>{{def.word}} = {{def.meaning}}</p>
+  </div>
   <canvas id="canvas"></canvas>
 </div>

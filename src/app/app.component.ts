@@ -4,6 +4,7 @@ import { Component, OnInit } from '@angular/core';
 import * as cocoSSD from '@tensorflow-models/coco-ssd';
 //import * as tf from '@tensorflow/tfjs-core';
 import '@tensorflow/tfjs-backend-cpu';
+import axios from 'axios';
 
 @Component({
   selector: 'app-root',
@@ -16,6 +17,7 @@ export class AppComponent implements OnInit
   title = 'angular-quickstart';
   image!: HTMLImageElement;
   model!: cocoSSD.ObjectDetection;
+  definitions: any[] = [];
 
   async ngOnInit()
   {
@@ -40,6 +42,7 @@ export class AppComponent implements OnInit
       reader.readAsDataURL(file);
     }
     this.image = imgtag;
+    this.definitions = [];
     console.log("File converted to image!")
   }
 
@@ -48,7 +51,23 @@ export class AppComponent implements OnInit
     this.model.detect(this.image).then((predictions: any) => {
       console.log("Done, drawing predictions...");
       console.log(predictions);
+      this.processPredictions(predictions);
       this.drawPredictions(predictions);
+    });
+  }
+
+  processPredictions = (predictions: any[]) => {
+    let seen: string[] = [];
+    predictions.forEach((prediction: {class: string}) => {
+      if(!seen.includes(prediction.class)){
+        seen.push(prediction.class);
+        axios
+        .get(`/.netlify/functions/getWordInfo?word=${prediction.class}`)
+        .then((response)=>{
+          console.log(response.data);
+          this.definitions.push({word: prediction.class, meaning: response.data});
+        });
+      }
     });
   }
 
